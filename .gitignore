@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+
+#Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+#Folders
+.vscode/*
+venv/*
