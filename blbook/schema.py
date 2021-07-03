@@ -1,4 +1,5 @@
 # cookbook/schema.py
+# pylint: disable=no-self-argument,redefined-builtin
 import graphene
 import graphql_jwt
 from django.contrib.auth import get_user_model
@@ -10,9 +11,20 @@ from blbook.posts.models import Follow
 from blbook.posts.models import Post
 
 class UserType(DjangoObjectType):
+    follower_count = graphene.Int() 
+    follows_count = graphene.Int()
+
     class Meta:
         model = User
         fields = ("id", "username", "email", "password")
+
+    def resolve_follows_count(self, info):
+        me = User.objects.get(id=self.id)
+        return me.following.count()
+
+    def resolve_follower_count(self, info):
+        me = User.objects.get(id=self.id)
+        return me.followed_by.all().count()
 
 
 class PostType(DjangoObjectType):
@@ -23,10 +35,22 @@ class PostType(DjangoObjectType):
 
 class Query(graphene.ObjectType):
     all_users = graphene.List(UserType)
+    follow_me = graphene.List(UserType)
 
     def resolve_all_users(root, info):
         # We can easily optimize query count in the resolve method
         return User.objects.all()
+
+    @login_required
+    def resolve_follow_me(root, info):
+        user = info.context.user
+        followers = []
+        for follower in user.followed_by.all():
+            followers.append(follower.user)
+ 
+
+        return followers
+
 
 class CreateUser(graphene.Mutation):
     success = graphene.Boolean()
@@ -36,7 +60,7 @@ class CreateUser(graphene.Mutation):
         username = graphene.String(required=True)
         password = graphene.String(required=True)
         email = graphene.String(required=True)
-    
+
     def mutate(self, info, username, password, email):
         try:
             user = get_user_model()(
@@ -59,7 +83,7 @@ class FollowUser(graphene.Mutation):
 
     def mutate(self, info, id):
         user = info.context.user
-        
+
         if not user.is_authenticated:
             return CreateUser(success=False, error_message="Authentication credentials were not provided")
 
@@ -67,7 +91,7 @@ class FollowUser(graphene.Mutation):
             user_followed = User.objects.get(id=id)
         except Exception:
             return FollowUser(success=False, errorMessage="Unable to find request user to follow")
-        
+
         try:
             Follow.objects.get_or_create(user=user, user_followed=user_followed)
         except Exception as e:
@@ -84,7 +108,7 @@ class UnfollowUser(graphene.Mutation):
 
     def mutate(self, info, id):
         user = info.context.user
-        
+
         if not user.is_authenticated:
             return CreateUser(success=False, error_message="Authentication credentials were not provided")
         try:
