@@ -29,7 +29,6 @@ class CreateUser(graphene.Mutation):
         return CreateUser(success=True, error_message=False)
 
 
-
 class FollowUser(graphene.Mutation):
     success = graphene.Boolean()
     error_message = graphene.String()
@@ -41,12 +40,17 @@ class FollowUser(graphene.Mutation):
         user = info.context.user
 
         if not user.is_authenticated:
-            return FollowUser(success=False, error_message="Authentication credentials were not provided")
+            return FollowUser(
+                success=False,
+                error_message="Authentication credentials were not provided",
+            )
 
         try:
             user_followed = User.objects.get(id=id)
         except Exception:
-            return FollowUser(success=False, errorMessage="Unable to find request user to follow")
+            return FollowUser(
+                success=False, errorMessage="Unable to find request user to follow"
+            )
 
         try:
             Follow.objects.get_or_create(user=user, user_followed=user_followed)
@@ -67,11 +71,17 @@ class UnfollowUser(graphene.Mutation):
         user = info.context.user
 
         if not user.is_authenticated:
-            return UnfollowUser(success=False, error_message="Authentication credentials were not provided")
+            return UnfollowUser(
+                success=False,
+                error_message="Authentication credentials were not provided",
+            )
         try:
             followed = Follow.objects.get(user=user, user_followed__id=id)
             if not followed:
-                return UnfollowUser(success=False, error_message="The user does not follow selected user")
+                return UnfollowUser(
+                    success=False,
+                    error_message="The user does not follow selected user",
+                )
             else:
                 followed.delete()
         except Exception as e:

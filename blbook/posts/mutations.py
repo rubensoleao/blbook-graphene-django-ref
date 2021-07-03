@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from .schemas import PostType
 from .models import Post
 
+
 class PostMessage(graphene.Mutation):
     success = graphene.Boolean()
     error_message = graphene.String()
@@ -15,7 +16,11 @@ class PostMessage(graphene.Mutation):
         user = info.context.user
 
         if not user.is_authenticated:
-            return PostMessage(success=False, error_message="Authentication credentials were not provided", meessage=None)
+            return PostMessage(
+                success=False,
+                error_message="Authentication credentials were not provided",
+                meessage=None,
+            )
 
         new_post = None
         try:

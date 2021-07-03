@@ -7,17 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('posts', '0001_initial'),
+        ("posts", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='post',
-            name='postedAt',
+            model_name="post",
+            name="postedAt",
         ),
         migrations.AddField(
-            model_name='post',
-            name='posted_at',
-            field=models.DateField(default=datetime.datetime(2021, 7, 3, 19, 53, 1, 87342)),
+            model_name="post",
+            name="posted_at",
+            field=models.DateField(
+                default=datetime.datetime(2021, 7, 3, 19, 53, 1, 87342)
+            ),
         ),
     ]
