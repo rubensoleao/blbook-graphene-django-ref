@@ -36,6 +36,7 @@ class PostType(DjangoObjectType):
 class Query(graphene.ObjectType):
     all_users = graphene.List(UserType)
     follow_me = graphene.List(UserType)
+    following = graphene.List(UserType)
 
     def resolve_all_users(root, info):
         # We can easily optimize query count in the resolve method
@@ -47,6 +48,16 @@ class Query(graphene.ObjectType):
         followers = []
         for follower in user.followed_by.all():
             followers.append(follower.user)
+ 
+
+        return followers
+
+    @login_required
+    def resolve_following(root, info):
+        user = info.context.user
+        followers = []
+        for follower in user.following.all():
+            followers.append(follower.user_followed)
  
 
         return followers
