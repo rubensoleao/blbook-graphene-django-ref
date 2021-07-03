@@ -3,16 +3,21 @@
 import graphene
 import graphql_jwt
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 from graphql_jwt.decorators import login_required
 
-from blbook.user.schemas import UserType
-from blbook.user.mutations import CreateUser, FollowUser, UnfollowUser
+from blbook.posts.models import Post
 from blbook.posts.mutations import PostMessage
+from blbook.posts.schemas import FeedType
+from blbook.user.mutations import CreateUser, FollowUser, UnfollowUser
+from blbook.user.schemas import UserType
+
 
 class Query(graphene.ObjectType):
     all_users = graphene.List(UserType)
     follow_me = graphene.List(UserType)
     following = graphene.List(UserType)
+    feed = graphene.Field(FeedType, limit=graphene.Int(), offset=graphene.Int())
 
     def resolve_all_users(root, info):
         return User.objects.all()
@@ -35,6 +40,19 @@ class Query(graphene.ObjectType):
 
         return followers
 
+    @login_required
+    def resolve_feed(root, info, limit, offset):
+        user = info.context.user
+        following_ids = user.following.values_list('user_followed__id', flat=True).all()
+        posts = Post.objects.filter(posted_by__id__in=following_ids).order_by("-posted_at")
+        paginator = Paginator(posts, limit)
+        page = int(offset / limit) + 1
+
+        return FeedType(
+            page_info={"total_pages": paginator.num_pages, "page": page},
+            messages=paginator.page(page),
+        )
+
 
 class Mutation(graphene.ObjectType):
     login = (
@@ -45,7 +63,7 @@ class Mutation(graphene.ObjectType):
     register = CreateUser.Field()
     follow = FollowUser.Field()
     unfollow = UnfollowUser.Field()
-    post_message= PostMessage.Field()
+    post_message = PostMessage.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

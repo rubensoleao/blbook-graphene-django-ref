@@ -10,4 +10,4 @@ class Post(models.Model):
     posted_at = models.DateField(default=datetime.now())
 
     def __str__(self):
-        return "{self.text}"
+        return f"{self.posted_by}: {self.text}"
