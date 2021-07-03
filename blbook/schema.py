@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
+from blbook.posts.models import Follow
 
 from blbook.posts.models import Post
 
@@ -28,7 +29,6 @@ class Query(graphene.ObjectType):
         # We can easily optimize query count in the resolve method
         return User.objects.all()
 
-
 class CreateUser(graphene.Mutation):
     success = graphene.Boolean()
     error_message = graphene.String()
@@ -51,6 +51,32 @@ class CreateUser(graphene.Mutation):
 
         return CreateUser(success=True, error_message=False)
 
+class FollowUser(graphene.Mutation):
+    success = graphene.Boolean()
+    error_message = graphene.String()
+
+    class Arguments:
+        id = graphene.Int()
+
+    def mutate(self, info, id):
+        user = info.context.user
+        
+        if not user.is_authenticated:
+            return CreateUser(success=False, error_message="Authentication credentials were not provided")
+
+        try:
+            user_followed = User.objects.get(id=id)
+        except Exception:
+            return FollowUser(success=False, errorMessage="Unable to find request user to follow")
+        
+        try:
+            Follow.objects.get_or_create(user=user, user_followed=user_followed)
+        except Exception as e:
+            return CreateUser(success=False, error_message=str(e))
+
+        return CreateUser(success=True, error_message=False)
+
+
 
 class Mutation(graphene.ObjectType):
     login = (
@@ -59,6 +85,7 @@ class Mutation(graphene.ObjectType):
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
     register = CreateUser.Field()
+    follow = FollowUser.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

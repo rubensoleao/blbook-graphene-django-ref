@@ -5,6 +5,7 @@ from django.contrib import admin
 
 # cookbook/ingredients/admin.py
 from django.contrib import admin
-from blbook.posts.models import Post
+from blbook.posts.models import Post, Follow
 
 admin.site.register(Post)
+admin.site.register(Follow)
