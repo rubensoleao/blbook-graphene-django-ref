@@ -7,7 +7,7 @@ from graphql_jwt.decorators import login_required
 
 from blbook.user.schemas import UserType
 from blbook.user.mutations import CreateUser, FollowUser, UnfollowUser
-
+from blbook.posts.mutations import PostMessage
 
 class Query(graphene.ObjectType):
     all_users = graphene.List(UserType)
@@ -45,6 +45,7 @@ class Mutation(graphene.ObjectType):
     register = CreateUser.Field()
     follow = FollowUser.Field()
     unfollow = UnfollowUser.Field()
+    post_message= PostMessage.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

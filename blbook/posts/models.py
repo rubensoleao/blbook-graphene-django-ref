@@ -7,7 +7,7 @@ from django.db import models
 class Post(models.Model):
     text = models.CharField(max_length=100)
     posted_by = models.ForeignKey(User, related_name="posts", on_delete=models.CASCADE)
-    postedAt = models.DateField(default=datetime.now())
+    posted_at = models.DateField(default=datetime.now())
 
     def __str__(self):
         return "{self.text}"
