@@ -1,13 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from datetime import datetime
 
 class Post(models.Model):
     text = models.CharField(max_length=100)
     posted_by = models.ForeignKey(User, related_name="posts", on_delete=models.CASCADE)
+    postedAt = models.DateField(default=datetime.now())
 
     def __str__(self):
-        return self.text
+        return "{self.text}"
 
 
 class Follow(models.Model):
