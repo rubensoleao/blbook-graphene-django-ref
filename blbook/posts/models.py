@@ -10,3 +10,10 @@ class Post(models.Model):
     def __str__(self):
         return self.text
 
+class Follow(models.Model):
+    user = models.ForeignKey(        
+        User, related_name="following", on_delete=models.CASCADE
+    )
+    user_followed = models.ForeignKey(        
+        User, related_name="followed_by", on_delete=models.CASCADE
+    )
