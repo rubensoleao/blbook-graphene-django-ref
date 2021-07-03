@@ -3,4 +3,3 @@
 pylint-django==2.4.4
 ipdb==0.13.9
 pytest==6.2.4
-django-graphql-jwt==0.3.2
