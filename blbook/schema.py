@@ -9,7 +9,6 @@ from blbook.posts.models import Follow
 
 from blbook.posts.models import Post
 
-
 class UserType(DjangoObjectType):
     class Meta:
         model = User
@@ -37,7 +36,7 @@ class CreateUser(graphene.Mutation):
         username = graphene.String(required=True)
         password = graphene.String(required=True)
         email = graphene.String(required=True)
-
+    
     def mutate(self, info, username, password, email):
         try:
             user = get_user_model()(
@@ -76,6 +75,29 @@ class FollowUser(graphene.Mutation):
 
         return CreateUser(success=True, error_message=False)
 
+class UnfollowUser(graphene.Mutation):
+    success = graphene.Boolean()
+    error_message = graphene.String()
+
+    class Arguments:
+        id = graphene.Int()
+
+    def mutate(self, info, id):
+        user = info.context.user
+        
+        if not user.is_authenticated:
+            return CreateUser(success=False, error_message="Authentication credentials were not provided")
+        try:
+            followed = Follow.objects.get(user=user, user_followed__id=id)
+            if not followed:
+                return CreateUser(success=False, error_message="The user does not follow selected user")
+            else:
+                followed.delete()
+        except Exception as e:
+            return CreateUser(success=False, error_message=str(e))
+
+        return CreateUser(success=True, error_message=False)
+
 
 
 class Mutation(graphene.ObjectType):
@@ -86,6 +108,7 @@ class Mutation(graphene.ObjectType):
     refresh_token = graphql_jwt.Refresh.Field()
     register = CreateUser.Field()
     follow = FollowUser.Field()
+    unfollow = UnfollowUser.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
