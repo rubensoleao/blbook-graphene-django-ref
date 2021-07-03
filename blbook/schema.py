@@ -28,8 +28,8 @@ class Query(graphene.ObjectType):
         return User.objects.all()
 
 class CreateUser(graphene.Mutation):
-    user = graphene.Field(UserType)
     success = graphene.Boolean()
+    error_message = graphene.String()
 
     class Arguments:
         username = graphene.String(required=True)
@@ -37,20 +37,22 @@ class CreateUser(graphene.Mutation):
         email = graphene.String(required=True)
 
     def mutate(self, info, username, password, email):
+        try:
         user = get_user_model()(
             username=username,
             email=email,
         )
         user.set_password(password)
         user.save()
+        except Exception as e:
+            return CreateUser(success=False, error_message=str(e))
 
-        return CreateUser(user=user, success=True)
+        return CreateUser(success=True, error_message=False)
 
 class Mutation(graphene.ObjectType):
     login = graphql_jwt.ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
     register = CreateUser.Field()
-
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
