@@ -7,8 +7,8 @@ This project demonstrates how to build a social media timeline by integrating Gr
 First, clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/rubensoleao/ref-django-graphene-blbook.git
-cd ref-django-graphene-blbook
+git clone https://github.com/rubensoleao/blbook-graphene-djang-ref.git
+cd blbook-graphene-djang-ref
 ```
 
 ### Setting Up the Environment
